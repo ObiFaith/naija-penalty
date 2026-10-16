@@ -324,4 +324,49 @@ class SoundManager {
   }
 }
 
+// Spoken Naija Matchday Commentary (Text-To-Speech)
+class CommentaryVoice {
+  constructor() {
+    this.synth = typeof window !== 'undefined' ? window.speechSynthesis : null;
+    this.voice = null;
+    this.init();
+  }
+
+  init() {
+    if (!this.synth) return;
+    const loadVoices = () => {
+      const voices = this.synth.getVoices();
+      if (!voices || voices.length === 0) return;
+      // Prefer English Nigerian (en-NG) or natural English voices
+      this.voice = voices.find(v => v.lang === 'en-NG' || v.lang.startsWith('en-NG'))
+                || voices.find(v => v.lang === 'en-GB' || v.lang.startsWith('en-GB'))
+                || voices.find(v => v.lang === 'en-US' || v.lang.startsWith('en-US'))
+                || voices[0];
+    };
+    loadVoices();
+    if (this.synth.onvoiceschanged !== undefined) {
+      this.synth.onvoiceschanged = loadVoices;
+    }
+  }
+
+  speak(text) {
+    if (!this.synth || sounds.muted) return;
+    try {
+      this.synth.cancel(); // Stop overlapping commentary
+      // Clean emojis for speech synthesis
+      const cleanText = text.replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]/gu, '').trim();
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      if (this.voice) utterance.voice = this.voice;
+      utterance.rate = 1.14;  // Fast, energetic match commentator pace
+      utterance.pitch = 1.22; // High-energy hype pitch
+      utterance.volume = 1.0;
+      this.synth.speak(utterance);
+    } catch (e) {
+      // Fallback silently if audio speech unavailable
+    }
+  }
+}
+
 export const sounds = new SoundManager();
+export const commentator = new CommentaryVoice();
+

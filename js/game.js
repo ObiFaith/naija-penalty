@@ -1,6 +1,6 @@
 // Naija Penalty Shootout: Main Game Loop, Physics, Stadium Renderer & Controls
 import { ALL_CLUBS, NIGERIAN_CLUBS, getRandomOpponentClub } from './clubs.js';
-import { sounds } from './sound.js';
+import { sounds, commentator } from './sound.js';
 import { getPlayer, saveScore, getLeaderboard, redirectToSignIn } from './startng.js';
 import { AnimatedCharacter, createRandomNaijaCharacter } from './character.js';
 
@@ -573,6 +573,9 @@ class PenaltyGame {
     }
     const phrase = list[Math.floor(Math.random() * list.length)];
     this.showBanner(phrase, color);
+
+    // Speak matchday commentary audio aloud!
+    commentator.speak(phrase);
   }
 
   showBanner(text, color = '#ffffff') {
