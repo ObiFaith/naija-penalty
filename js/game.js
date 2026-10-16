@@ -141,6 +141,10 @@ class PenaltyGame {
     this.canvas.height = this.height * dpr;
     this.ctx.resetTransform();
     this.ctx.scale(dpr, dpr);
+
+    // Dynamic goal scaling for phone & tablet screens (preventing out-of-screen posts)
+    this.goalWidth = Math.min(320, Math.max(220, this.width * 0.72));
+    this.goalHeight = this.goalWidth * 0.50;
   }
 
   setupMatchCharacters() {
@@ -293,16 +297,21 @@ class PenaltyGame {
   initInputs() {
     const getPos = (e) => {
       const rect = this.canvas.getBoundingClientRect();
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const touch = (e.touches && e.touches.length > 0)
+        ? e.touches[0]
+        : (e.changedTouches && e.changedTouches.length > 0)
+          ? e.changedTouches[0]
+          : e;
+
       return {
-        x: clientX - rect.left,
-        y: clientY - rect.top
+        x: touch.clientX - rect.left,
+        y: touch.clientY - rect.top
       };
     };
 
     const onStart = (e) => {
       if (this.state !== 'PLAYING' || this.ball.inFlight) return;
+      if (e.cancelable) e.preventDefault();
       sounds.init(); // unlock audio on first touch
       this.isDragging = true;
       const pos = getPos(e);
@@ -312,11 +321,13 @@ class PenaltyGame {
 
     const onMove = (e) => {
       if (!this.isDragging) return;
+      if (e.cancelable) e.preventDefault();
       this.dragCurrent = getPos(e);
     };
 
-    const onEnd = () => {
+    const onEnd = (e) => {
       if (!this.isDragging) return;
+      if (e.cancelable) e.preventDefault();
       this.isDragging = false;
       this.handleShootOrDive();
     };
@@ -325,9 +336,9 @@ class PenaltyGame {
     this.canvas.addEventListener('mousemove', onMove);
     window.addEventListener('mouseup', onEnd);
 
-    this.canvas.addEventListener('touchstart', onStart, { passive: true });
-    this.canvas.addEventListener('touchmove', onMove, { passive: true });
-    window.addEventListener('touchend', onEnd);
+    this.canvas.addEventListener('touchstart', onStart, { passive: false });
+    this.canvas.addEventListener('touchmove', onMove, { passive: false });
+    window.addEventListener('touchend', onEnd, { passive: false });
 
     // Audio Mute button
     const muteBtn = document.getElementById('mute-btn');

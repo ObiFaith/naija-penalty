@@ -337,12 +337,26 @@ class CommentaryVoice {
     const loadVoices = () => {
       const voices = this.synth.getVoices();
       if (!voices || voices.length === 0) return;
-      // Prefer English Nigerian (en-NG) or natural English voices
-      this.voice = voices.find(v => v.lang === 'en-NG' || v.lang.startsWith('en-NG'))
-                || voices.find(v => v.lang === 'en-GB' || v.lang.startsWith('en-GB'))
-                || voices.find(v => v.lang === 'en-US' || v.lang.startsWith('en-US'))
-                || voices[0];
+
+      const isFemale = (v) => /female|woman|girl|zira|samantha|victoria|karen|catherine|jenny|hazel|susan|helena|fiona/i.test(v.name);
+      const isMale = (v) => /male|man|boy|david|george|james|mark|daniel|brian|oliver|guy|richard|alex|tom|fred/i.test(v.name);
+
+      // 1. Try Nigerian English male voice first (en-NG)
+      let selected = voices.find(v => (v.lang === 'en-NG' || v.lang.startsWith('en-NG')) && !isFemale(v));
+      if (!selected) selected = voices.find(v => v.lang === 'en-NG' || v.lang.startsWith('en-NG'));
+
+      // 2. Try any English male voice
+      if (!selected) selected = voices.find(v => v.lang.startsWith('en') && isMale(v));
+
+      // 3. Any English voice that is not explicitly female
+      if (!selected) selected = voices.find(v => v.lang.startsWith('en') && !isFemale(v));
+
+      // 4. Default fallback
+      if (!selected) selected = voices.find(v => v.lang.startsWith('en')) || voices[0];
+
+      this.voice = selected;
     };
+
     loadVoices();
     if (this.synth.onvoiceschanged !== undefined) {
       this.synth.onvoiceschanged = loadVoices;
@@ -352,17 +366,21 @@ class CommentaryVoice {
   speak(text) {
     if (!this.synth || sounds.muted) return;
     try {
-      this.synth.cancel(); // Stop overlapping commentary
-      // Clean emojis for speech synthesis
-      const cleanText = text.replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]/gu, '').trim();
+      this.synth.cancel(); // Stop overlapping speech
+      // Clean emojis and punctuation for smooth delivery
+      const cleanText = text.replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]/gu, '').replace(/[!#?*]/g, ' ').trim();
       const utterance = new SpeechSynthesisUtterance(cleanText);
       if (this.voice) utterance.voice = this.voice;
-      utterance.rate = 1.14;  // Fast, energetic match commentator pace
-      utterance.pitch = 1.22; // High-energy hype pitch
+
+      // Paced speech rate (reduced speed as requested by user)
+      utterance.rate = 0.90;
+
+      // Deep masculine pitch (giving that robust Nigerian stadium commentator hype)
+      utterance.pitch = 0.88;
       utterance.volume = 1.0;
       this.synth.speak(utterance);
     } catch (e) {
-      // Fallback silently if audio speech unavailable
+      // Fallback silently
     }
   }
 }
