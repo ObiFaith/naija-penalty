@@ -20,43 +20,45 @@
       Naija Penalty Shootout — start.ng
     </h1>
 
-    <!-- start.ng Official Character Profile Card -->
-    <div class="startng-card" id="player-card" hidden>
-      <img id="player-face" alt="Player avatar" src="./cover.png">
-      <div class="user-details">
-        <b id="player-name">Loading...</b>
-        <span id="player-account">@startng</span>
+    <!-- Unified TV Sports Broadcast Bar (Pinned to Top) -->
+    <header class="broadcast-bar" id="broadcast-bar">
+      <!-- Left: Player Profile / start.ng Identity -->
+      <div class="bar-left">
+        <div class="startng-profile" id="player-card">
+          <img id="player-face" alt="Player avatar" src="./cover.png">
+          <div class="profile-text">
+            <span class="player-name-txt" id="player-name">Player</span>
+            <button class="signin-pill" id="player-sign-in" hidden>Sign in</button>
+          </div>
+        </div>
       </div>
-      <button id="player-sign-in" hidden>Sign in</button>
-    </div>
 
-    <!-- Match Shootout Scoreboard -->
-    <header class="match-hud">
-      <div class="round-badge" id="round-badge">ROUND 1/5</div>
-      <div class="scoreboard-card">
-        <div class="team-hud left">
-          <span class="team-label" id="team-left-name">Chelsea</span>
-          <div class="pill-container" id="player-pills"></div>
+      <!-- Center: Broadcast Score Ticker & Shootout Dots -->
+      <div class="bar-center">
+        <div class="ticker-match">
+          <div class="team-side left">
+            <span class="team-abbr" id="team-left-name">CHE</span>
+            <div class="kicks-row" id="player-pills"></div>
+          </div>
+
+          <div class="score-box">
+            <span class="score-num" id="match-score">0 - 0</span>
+            <span class="round-tag" id="round-badge">R3/5</span>
+          </div>
+
+          <div class="team-side right">
+            <span class="team-abbr" id="team-right-name">RAN</span>
+            <div class="kicks-row" id="opp-pills"></div>
+          </div>
         </div>
+      </div>
 
-        <div class="score-display" id="match-score">0 - 0</div>
-
-        <div class="team-hud right">
-          <span class="team-label" id="team-right-name">Enyimba</span>
-          <div class="pill-container" id="opp-pills"></div>
-        </div>
+      <!-- Right: Action Icons (Mute & Switch Club) -->
+      <div class="bar-right">
+        <button class="icon-btn" id="change-team-btn" title="Switch Club">🛡️</button>
+        <button class="icon-btn" id="mute-btn" title="Mute/Unmute">🔊</button>
       </div>
     </header>
-
-    <!-- Top Right Action Controls -->
-    <aside class="top-actions">
-      <button class="action-btn" id="change-team-btn" title="Choose Club">
-        <span>🛡️</span> <span>Switch Club</span>
-      </button>
-      <button class="action-btn" id="mute-btn" title="Mute/Unmute Audio">
-        🔊
-      </button>
-    </aside>
 
     <!-- Game Canvas -->
     <main id="canvas-container">

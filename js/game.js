@@ -111,22 +111,26 @@ class PenaltyGame {
   }
 
   async init() {
-    // 1. Fetch player from start.ng
-    this.playerIdentity = await getPlayer();
-    this.updateProfileCard();
-
-    // 2. Set up initial characters
+    // 1. Set up initial characters immediately so the game renders on frame 1
     this.setupMatchCharacters();
 
-    // 3. Populate club selection list
+    // 2. Populate club selection list
     this.populateClubSelector();
 
-    // 4. Initial whistle and banner
+    // 3. Initial whistle and banner
     this.showBanner('NAIJA PENALTY SHOOTOUT! OYA!', '#22c55e');
 
-    // 5. Start loop
+    // 4. Start loop immediately
     this.lastTime = performance.now();
     requestAnimationFrame((t) => this.gameLoop(t));
+
+    // 5. Fetch player from start.ng asynchronously without blocking rendering
+    try {
+      this.playerIdentity = await getPlayer();
+      this.updateProfileCard();
+    } catch (e) {
+      console.warn('start.ng player identity fetch skipped/offline:', e);
+    }
   }
 
   resize() {
@@ -198,13 +202,11 @@ class PenaltyGame {
     const hintEl = document.getElementById('controls-hint');
     if (!hintEl) return;
     if (this.turn === 'player') {
-      hintEl.innerHTML = `⚽ <strong>YOU ARE THE STRIKER (${this.playerClub.shortName})</strong>: Drag or Tap to Score!`;
-      hintEl.style.borderColor = '#22c55e';
-      hintEl.style.color = '#86efac';
+      hintEl.textContent = '⚽ Swipe or Tap Goal to Shoot';
+      hintEl.style.borderColor = 'rgba(34, 197, 94, 0.4)';
     } else {
-      hintEl.innerHTML = `🧤 <strong>YOU ARE THE GOALKEEPER (${this.playerClub.shortName})</strong>: Anticipate & Tap to Dive!`;
-      hintEl.style.borderColor = '#38bdf8';
-      hintEl.style.color = '#7dd3fc';
+      hintEl.textContent = '🧤 Tap Net to Dive & Save';
+      hintEl.style.borderColor = 'rgba(56, 189, 248, 0.4)';
     }
   }
 
@@ -240,8 +242,8 @@ class PenaltyGame {
         faceEl.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="%23008751"/><circle cx="20" cy="16" r="8" fill="%2387532d"/><circle cx="17" cy="15" r="1.5" fill="%23fff"/><circle cx="23" cy="15" r="1.5" fill="%23fff"/></svg>';
       }
       nameEl.textContent = this.playerIdentity.name || 'Naija Star';
-      accountEl.textContent = this.playerIdentity.account ? `@${this.playerIdentity.account}` : 'Guest Player';
-      signinBtn.hidden = !this.playerIdentity.isGuest;
+      if (accountEl) accountEl.textContent = this.playerIdentity.account ? `@${this.playerIdentity.account}` : 'Guest Player';
+      if (signinBtn) signinBtn.hidden = !this.playerIdentity.isGuest;
       card.hidden = false;
     }
   }
@@ -615,17 +617,17 @@ class PenaltyGame {
     const teamRightName = document.getElementById('team-right-name');
     const roundBadge = document.getElementById('round-badge');
 
-    if (teamLeftName) teamLeftName.textContent = this.playerClub.shortName;
-    if (teamRightName) teamRightName.textContent = this.opponentClub.shortName;
+    if (teamLeftName) teamLeftName.textContent = this.playerClub.abbr || this.playerClub.shortName;
+    if (teamRightName) teamRightName.textContent = this.opponentClub.abbr || this.opponentClub.shortName;
     if (scoreText) scoreText.textContent = `${this.playerScore} - ${this.opponentScore}`;
 
     if (roundBadge) {
       if (this.isSuddenDeath) {
-        roundBadge.textContent = '⚡ SUDDEN DEATH';
-        roundBadge.className = 'round-badge sudden-death';
+        roundBadge.textContent = '⚡ SD';
+        roundBadge.className = 'round-tag sudden-death';
       } else {
-        roundBadge.textContent = `ROUND ${Math.min(5, this.round)}/5`;
-        roundBadge.className = 'round-badge';
+        roundBadge.textContent = `R${Math.min(5, this.round)}/5`;
+        roundBadge.className = 'round-tag';
       }
     }
 
@@ -638,7 +640,6 @@ class PenaltyGame {
         dot.className = 'pill-dot';
         if (i < kicks.length) {
           dot.classList.add(kicks[i] ? 'goal' : 'miss');
-          dot.textContent = kicks[i] ? '✓' : '✗';
         }
         el.appendChild(dot);
       }
@@ -880,9 +881,9 @@ class PenaltyGame {
   projectBallToScreen(x, y, z) {
     // z ranges 0 (penalty spot) to 1 (goal net)
     const goalCenterScreenX = this.width * 0.5;
-    const goalCenterScreenY = this.height * 0.44;
+    const goalCenterScreenY = this.height * 0.35;
     const spotScreenX = this.width * 0.5;
-    const spotScreenY = this.height * 0.78;
+    const spotScreenY = this.height * 0.70;
 
     const currentOriginX = spotScreenX + (goalCenterScreenX - spotScreenX) * z;
     const currentOriginY = spotScreenY + (goalCenterScreenY - spotScreenY) * z;
@@ -926,7 +927,7 @@ class PenaltyGame {
   }
 
   drawStadiumSkyAndCrowd() {
-    const horizon = this.height * 0.38;
+    const horizon = this.height * 0.30;
 
     // Stadium Floodlit Sky
     const skyGrad = this.ctx.createLinearGradient(0, 0, 0, horizon);
@@ -990,7 +991,7 @@ class PenaltyGame {
   }
 
   drawPitch() {
-    const horizon = this.height * 0.38;
+    const horizon = this.height * 0.30;
     const pitchH = this.height - horizon;
 
     // Grass Stripes
@@ -1004,40 +1005,40 @@ class PenaltyGame {
 
     // White Pitch Markings (Perspective)
     this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
-    this.ctx.lineWidth = 3;
+    this.ctx.lineWidth = 2.5;
 
     // Goal line
-    const goalLineY = this.height * 0.44;
+    const goalLineY = this.height * 0.35;
     this.ctx.beginPath();
-    this.ctx.moveTo(this.width * 0.15, goalLineY);
-    this.ctx.lineTo(this.width * 0.85, goalLineY);
+    this.ctx.moveTo(this.width * 0.12, goalLineY);
+    this.ctx.lineTo(this.width * 0.88, goalLineY);
     this.ctx.stroke();
 
     // 6-yard box
     this.ctx.beginPath();
-    this.ctx.moveTo(this.width * 0.32, goalLineY);
-    this.ctx.lineTo(this.width * 0.28, goalLineY + 35);
-    this.ctx.lineTo(this.width * 0.72, goalLineY + 35);
-    this.ctx.lineTo(this.width * 0.68, goalLineY);
+    this.ctx.moveTo(this.width * 0.30, goalLineY);
+    this.ctx.lineTo(this.width * 0.26, goalLineY + 28);
+    this.ctx.lineTo(this.width * 0.74, goalLineY + 28);
+    this.ctx.lineTo(this.width * 0.70, goalLineY);
     this.ctx.stroke();
 
     // Penalty Spot at bottom center
     const spotX = this.width * 0.5;
-    const spotY = this.height * 0.78;
+    const spotY = this.height * 0.70;
     this.ctx.fillStyle = '#ffffff';
     this.ctx.beginPath();
-    this.ctx.arc(spotX, spotY, 5, 0, Math.PI * 2);
+    this.ctx.arc(spotX, spotY, 4.5, 0, Math.PI * 2);
     this.ctx.fill();
 
     // Penalty Arc
     this.ctx.beginPath();
-    this.ctx.arc(spotX, spotY, 65, Math.PI * 0.15, Math.PI * 0.85);
+    this.ctx.arc(spotX, spotY, 52, Math.PI * 0.15, Math.PI * 0.85);
     this.ctx.stroke();
   }
 
   drawGoalNetAndPosts() {
     const cx = this.width * 0.5;
-    const cy = this.height * 0.44;
+    const cy = this.height * 0.35;
     const halfW = this.goalWidth * 0.5;
     const h = this.goalHeight;
 
@@ -1052,7 +1053,7 @@ class PenaltyGame {
     const netGroundY = cy - 6;
 
     // Draw Net Mesh
-    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.32)';
     this.ctx.lineWidth = 1;
 
     // Horizontal net lines with bulge
@@ -1061,7 +1062,7 @@ class PenaltyGame {
       const p = r / rows;
       const yFront = crossbarY + p * h;
       const yBack = netDepthY + p * (netGroundY - netDepthY);
-      const bulge = (this.netBulge * Math.sin(p * Math.PI) * 18);
+      const bulge = (this.netBulge * Math.sin(p * Math.PI) * 16);
 
       this.ctx.beginPath();
       this.ctx.moveTo(postL, yFront);
@@ -1070,7 +1071,7 @@ class PenaltyGame {
     }
 
     // Vertical net lines
-    const cols = 22;
+    const cols = 20;
     for (let c = 0; c <= cols; c++) {
       const p = c / cols;
       const xTop = postL + p * this.goalWidth;
@@ -1084,7 +1085,7 @@ class PenaltyGame {
 
     // Goal Posts & Crossbar (Glossy White 3D Pipes)
     this.ctx.strokeStyle = '#ffffff';
-    this.ctx.lineWidth = 8;
+    this.ctx.lineWidth = 7;
     this.ctx.lineCap = 'round';
     this.ctx.lineJoin = 'round';
 
@@ -1100,7 +1101,7 @@ class PenaltyGame {
 
     // Metallic Highlight on Posts
     this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
-    this.ctx.lineWidth = 2.5;
+    this.ctx.lineWidth = 2;
     this.ctx.beginPath();
     this.ctx.moveTo(postL - 2, cy);
     this.ctx.lineTo(postL - 2, crossbarY - 2);
@@ -1111,32 +1112,34 @@ class PenaltyGame {
 
   drawCharacters() {
     const isPlayerStriker = (this.turn === 'player');
-
+    const scaleFactor = Math.min(1.0, Math.max(0.72, this.width / 400));
+ 
     // 1. Goalkeeper (stands on goal line cx, cy)
     if (this.keeperChar) {
       const cx = this.width * 0.5;
-      const cy = this.height * 0.44;
-      this.keeperChar.drawGoalkeeper(this.ctx, cx, cy, 0.85);
+      const cy = this.height * 0.35;
+      this.keeperChar.drawGoalkeeper(this.ctx, cx, cy, 0.78 * scaleFactor);
 
-      // Overhead Tag for Goalkeeper
+      // Overhead Tag for Goalkeeper (floats right above crossbar)
       this.drawRoleTag(
         cx,
-        cy - 72,
+        cy - this.goalHeight - 12,
         !isPlayerStriker ? 'YOU (GOALIE)' : 'OPPONENT',
         !isPlayerStriker ? '#22c55e' : '#f97316'
       );
     }
 
-    // 2. Striker (stands at penalty spot)
+    // 2. Striker (stands comfortably at penalty spot)
     if (this.strikerChar) {
-      const spotX = this.width * 0.5 - 28;
-      const spotY = this.height * 0.82;
-      this.strikerChar.drawStriker(this.ctx, spotX, spotY, 1.25);
+      const spotX = this.width * 0.5 - 20 * scaleFactor;
+      const spotY = this.height * 0.70 + 16;
+      const strikerScale = 0.90 * scaleFactor;
+      this.strikerChar.drawStriker(this.ctx, spotX, spotY, strikerScale);
 
-      // Overhead Tag for Striker
+      // Overhead Tag for Striker (cleanly above head)
       this.drawRoleTag(
         spotX,
-        spotY - 110,
+        spotY - 72 * strikerScale,
         isPlayerStriker ? 'YOU (STRIKER)' : 'OPPONENT',
         isPlayerStriker ? '#22c55e' : '#f97316'
       );
@@ -1145,30 +1148,30 @@ class PenaltyGame {
 
   drawRoleTag(x, y, text, color) {
     this.ctx.save();
-    this.ctx.font = '900 11px "Outfit", sans-serif';
+    this.ctx.font = '900 9.5px "Outfit", sans-serif';
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'middle';
 
     const metrics = this.ctx.measureText(text);
-    const w = metrics.width + 16;
-    const h = 20;
+    const w = metrics.width + 12;
+    const h = 17;
 
     // Tag background
-    this.ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+    this.ctx.fillStyle = 'rgba(10, 20, 15, 0.85)';
     this.ctx.strokeStyle = color;
-    this.ctx.lineWidth = 1.5;
+    this.ctx.lineWidth = 1.2;
 
     this.ctx.beginPath();
-    this.ctx.roundRect(x - w * 0.5, y - h * 0.5, w, h, 10);
+    this.ctx.roundRect(x - w * 0.5, y - h * 0.5, w, h, 8);
     this.ctx.fill();
     this.ctx.stroke();
 
     // Little pointer triangle
     this.ctx.fillStyle = color;
     this.ctx.beginPath();
-    this.ctx.moveTo(x - 4, y + h * 0.5);
-    this.ctx.lineTo(x + 4, y + h * 0.5);
-    this.ctx.lineTo(x, y + h * 0.5 + 4);
+    this.ctx.moveTo(x - 3, y + h * 0.5);
+    this.ctx.lineTo(x + 3, y + h * 0.5);
+    this.ctx.lineTo(x, y + h * 0.5 + 3);
     this.ctx.fill();
 
     // Text
@@ -1195,7 +1198,7 @@ class PenaltyGame {
     }
 
     // Ground Shadow
-    const groundY = this.height * 0.78 + (this.height * 0.44 - this.height * 0.78) * this.ball.z;
+    const groundY = this.height * 0.74 + (this.height * 0.36 - this.height * 0.74) * this.ball.z;
     this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
     this.ctx.beginPath();
     this.ctx.ellipse(x, groundY + 8 * scale, 16 * scale, 6 * scale, 0, 0, Math.PI * 2);
@@ -1291,22 +1294,27 @@ class PenaltyGame {
 
     this.ctx.save();
     const bx = this.width * 0.5;
-    const by = this.height * 0.22;
+    const by = this.height * 0.52; // Midfield turf — completely clear of goal and characters!
 
-    this.ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
-    this.ctx.strokeStyle = this.banner.color;
-    this.ctx.lineWidth = 3;
+    if (this.banner.time < 0.5) {
+      this.ctx.globalAlpha = Math.max(0, this.banner.time / 0.5);
+    }
 
-    this.ctx.font = '900 18px "Outfit", sans-serif';
+    const fontSize = Math.min(15, Math.max(11, this.width * 0.040));
+    this.ctx.font = `900 ${fontSize}px "Outfit", sans-serif`;
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'middle';
 
     const textMetrics = this.ctx.measureText(this.banner.text);
-    const boxW = Math.max(220, textMetrics.width + 48);
-    const boxH = 46;
+    const boxW = Math.min(this.width * 0.88, textMetrics.width + 36);
+    const boxH = Math.min(36, fontSize * 2.3);
+
+    this.ctx.fillStyle = 'rgba(10, 20, 15, 0.92)';
+    this.ctx.strokeStyle = this.banner.color;
+    this.ctx.lineWidth = 2;
 
     this.ctx.beginPath();
-    this.ctx.roundRect(bx - boxW * 0.5, by - boxH * 0.5, boxW, boxH, 24);
+    this.ctx.roundRect(bx - boxW * 0.5, by - boxH * 0.5, boxW, boxH, boxH * 0.5);
     this.ctx.fill();
     this.ctx.stroke();
 

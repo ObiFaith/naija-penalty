@@ -4,6 +4,7 @@ export const NIGERIAN_CLUBS = [
     id: 'enyimba',
     name: 'Enyimba FC',
     shortName: 'Enyimba',
+    abbr: 'ENY',
     city: 'Aba, Abia',
     nickname: 'The People\'s Elephant',
     league: 'NPFL',
@@ -31,6 +32,7 @@ export const NIGERIAN_CLUBS = [
     id: 'kanopillars',
     name: 'Kano Pillars',
     shortName: 'Kano Pillars',
+    abbr: 'PIL',
     city: 'Kano',
     nickname: 'Sai Masu Gida',
     league: 'NPFL',
@@ -58,6 +60,7 @@ export const NIGERIAN_CLUBS = [
     id: 'shootingstars',
     name: 'Shooting Stars 3SC',
     shortName: '3SC Ibadan',
+    abbr: '3SC',
     city: 'Ibadan, Oyo',
     nickname: 'Oluyole Warriors',
     league: 'NPFL',
@@ -86,6 +89,7 @@ export const NIGERIAN_CLUBS = [
     id: 'remostars',
     name: 'Remo Stars',
     shortName: 'Remo Stars',
+    abbr: 'REM',
     city: 'Ikenne, Ogun',
     nickname: 'Sky Blue Stars',
     league: 'NPFL',
@@ -111,6 +115,7 @@ export const NIGERIAN_CLUBS = [
     id: 'rangers',
     name: 'Rangers International',
     shortName: 'Enugu Rangers',
+    abbr: 'RAN',
     city: 'Enugu',
     nickname: 'Flying Antelopes',
     league: 'NPFL',
@@ -138,6 +143,7 @@ export const EUROPEAN_CLUBS = [
     id: 'chelsea',
     name: 'Chelsea FC',
     shortName: 'Chelsea',
+    abbr: 'CHE',
     city: 'London, England',
     nickname: 'The Blues',
     league: 'Europe',
@@ -161,6 +167,7 @@ export const EUROPEAN_CLUBS = [
     id: 'arsenal',
     name: 'Arsenal FC',
     shortName: 'Arsenal',
+    abbr: 'ARS',
     city: 'London, England',
     nickname: 'The Gunners',
     league: 'Europe',
@@ -183,6 +190,7 @@ export const EUROPEAN_CLUBS = [
     id: 'manutd',
     name: 'Manchester United',
     shortName: 'Man United',
+    abbr: 'MUN',
     city: 'Manchester, England',
     nickname: 'Red Devils',
     league: 'Europe',
@@ -205,6 +213,7 @@ export const EUROPEAN_CLUBS = [
     id: 'realmadrid',
     name: 'Real Madrid',
     shortName: 'Real Madrid',
+    abbr: 'RMA',
     city: 'Madrid, Spain',
     nickname: 'Los Blancos',
     league: 'Europe',
@@ -225,6 +234,7 @@ export const EUROPEAN_CLUBS = [
     id: 'barcelona',
     name: 'FC Barcelona',
     shortName: 'Barcelona',
+    abbr: 'BAR',
     city: 'Barcelona, Spain',
     nickname: 'Blaugrana',
     league: 'Europe',
@@ -252,6 +262,7 @@ export const EUROPEAN_CLUBS = [
     id: 'liverpool',
     name: 'Liverpool FC',
     shortName: 'Liverpool',
+    abbr: 'LIV',
     city: 'Liverpool, England',
     nickname: 'The Reds',
     league: 'Europe',
@@ -276,8 +287,6 @@ export const ALL_CLUBS = [...EUROPEAN_CLUBS, ...NIGERIAN_CLUBS];
 /**
  * Kit Clash Prevention Rule:
  * Opponent MUST be an authentic Nigerian club with a completely DIFFERENT color hue!
- * e.g., if player selects a Blue kit (Chelsea/3SC/Enyimba/Remo Stars), opponent CANNOT be Blue.
- * If player selects a Red kit (Arsenal/Man United/Liverpool/Rangers), opponent CANNOT be Red.
  */
 export function getRandomOpponentClub(playerClubOrId) {
   const playerClub = typeof playerClubOrId === 'string'
@@ -286,7 +295,6 @@ export function getRandomOpponentClub(playerClubOrId) {
 
   const playerCategory = playerClub?.colorCategory || 'blue';
 
-  // Filter Nigerian clubs with strictly different color categories
   const nonClashing = NIGERIAN_CLUBS.filter(c => 
     c.id !== playerClub.id && c.colorCategory !== playerCategory
   );
@@ -295,7 +303,6 @@ export function getRandomOpponentClub(playerClubOrId) {
     return nonClashing[Math.floor(Math.random() * nonClashing.length)];
   }
 
-  // Fallback
   const fallback = NIGERIAN_CLUBS.filter(c => c.id !== playerClub.id);
   return fallback[Math.floor(Math.random() * fallback.length)];
 }
