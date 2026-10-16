@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Naija Penalty Shootout — start.ng</title>
+  <meta name="description" content="Experience authentic Nigerian matchday hype in this 5-round penalty shootout game featuring European powerhouses and top Nigerian football clubs on start.ng!">
+  
+  <!-- Open Graph Meta -->
+  <meta property="og:title" content="Naija Penalty Shootout — start.ng">
+  <meta property="og:description" content="Score penalties, make clutch saves, and climb the start.ng leaderboard in authentic Lagos stadium style!">
+  <meta property="og:image" content="./cover.png">
+  
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Accessible Heading for SEO -->
+    <h1 style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0;">
+      Naija Penalty Shootout — start.ng
+    </h1>
+
+    <!-- start.ng Official Character Profile Card -->
+    <div class="startng-card" id="player-card" hidden>
+      <img id="player-face" alt="Player avatar" src="./cover.png">
+      <div class="user-details">
+        <b id="player-name">Loading...</b>
+        <span id="player-account">@startng</span>
+      </div>
+      <button id="player-sign-in" hidden>Sign in</button>
+    </div>
+
+    <!-- Match Shootout Scoreboard -->
+    <header class="match-hud">
+      <div class="round-badge" id="round-badge">ROUND 1/5</div>
+      <div class="scoreboard-card">
+        <div class="team-hud left">
+          <span class="team-label" id="team-left-name">Chelsea</span>
+          <div class="pill-container" id="player-pills"></div>
+        </div>
+
+        <div class="score-display" id="match-score">0 - 0</div>
+
+        <div class="team-hud right">
+          <span class="team-label" id="team-right-name">Enyimba</span>
+          <div class="pill-container" id="opp-pills"></div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Top Right Action Controls -->
+    <aside class="top-actions">
+      <button class="action-btn" id="change-team-btn" title="Choose Club">
+        <span>🛡️</span> <span>Switch Club</span>
+      </button>
+      <button class="action-btn" id="mute-btn" title="Mute/Unmute Audio">
+        🔊
+      </button>
+    </aside>
+
+    <!-- Game Canvas -->
+    <main id="canvas-container">
+      <canvas id="game-canvas"></canvas>
+    </main>
+
+    <!-- Control Hints -->
+    <footer class="controls-hint" id="controls-hint">
+      ⚽ Drag or Tap on the net to Shoot or Dive!
+    </footer>
+
+    <!-- Team Selection Modal -->
+    <div class="modal-overlay" id="team-modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Select Your Football Club</h3>
+          <button class="close-btn" id="close-modal-btn">&times;</button>
+        </div>
+        <p style="font-size: 13px; color: var(--text-muted);">
+          Pick any European or Nigerian club! Your opponent is always drawn from top Nigerian Premier League giants.
+        </p>
+        <div class="club-grid" id="club-grid"></div>
+      </div>
+    </div>
+
+    <!-- Game Over / Shootout Results Modal -->
+    <div class="modal-overlay" id="gameover-modal">
+      <div class="modal-content gameover-box">
+        <h2 id="gameover-title">🏆 YOU WIN!</h2>
+        <p id="gameover-message">Chelsea wins the shootout in classic Lagos style!</p>
+        
+        <div class="final-score-badge" id="final-score">4 - 3</div>
+
+        <div class="stats-grid">
+          <div class="stat-item">
+            <span class="stat-val" id="stats-goals">0</span>
+            <span class="stat-lbl">Goals Scored</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-val" id="stats-saves">0</span>
+            <span class="stat-lbl">Saves Made</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-val" id="stats-wins">0</span>
+            <span class="stat-lbl">Total Wins</span>
+          </div>
+        </div>
+
+        <div class="leaderboard-section">
+          <h4>🌟 start.ng Leaderboard</h4>
+          <ol class="leaderboard-list" id="leaderboard-list">
+            <li class="loading">Loading top players...</li>
+          </ol>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn-primary" id="rematch-btn">🔄 Play Next Match</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./js/game.js"></script>
+</body>
+</html>

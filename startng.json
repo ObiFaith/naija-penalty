@@ -1,0 +1,9 @@
+{
+  "leaderboard": {
+    "stats": [
+      { "key": "wins", "label": "Shootouts Won", "order": "highest" },
+      { "key": "goals", "label": "Goals Scored", "order": "highest" },
+      { "key": "saves", "label": "Saves Made", "order": "highest" }
+    ]
+  }
+}
